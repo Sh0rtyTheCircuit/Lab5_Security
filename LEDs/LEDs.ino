@@ -70,7 +70,7 @@ void AllClear(){
 void Msg_rcv(char* topic, byte* payload, unsigned int length){     //Unsigned int = Positive numbers (more range)
   Serial.println((char)payload[1]);
   if ((char) payload[0] == 'o'){
-    if ((char) payload[1] == 'n'){
+    if ((char) payload[1] == 'n' or (char) payload[1] == 'p'){
       LED_pwr = "On";
     }
     else{
@@ -87,7 +87,7 @@ void Msg_rcv(char* topic, byte* payload, unsigned int length){     //Unsigned in
     TurnYELLOW();
   }
   else if ((char) payload[0] == 'r' && LED_pwr == "On"){
-    LED_color = "Red";
+    //LED_color = "Red";
     TurnRED();
   }
   //Turn_color();
@@ -95,7 +95,7 @@ void Msg_rcv(char* topic, byte* payload, unsigned int length){     //Unsigned in
 
 // ### Call the functions according to the payload and LED power being on or off ### //
 
-void Turn_color(){
+/* void Turn_color(){
   if (LED_pwr == "On"){
     if (LED_color == "Green"){
       TurnGREEN();
@@ -113,7 +113,7 @@ void Turn_color(){
     AllClear();
     Serial.println ("Power is off");  
    }
-}
+} */
 
 void setup() {
   // put your setup code here, to run once:

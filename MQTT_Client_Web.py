@@ -22,7 +22,11 @@ mqtt_port = 1883
 
 def msg_rcv(sensors, user_data, msg):   #Interpret Msgs (Loops)
         print "Payload is " + str(msg.payload)
-        if (str(msg.payload) == "on"):
+        if (str(msg.payload) == "close"):
+				LED_color == "close"
+		elif (str(msg.payload) == "open"):
+				LED_color == "open"
+		elif (str(msg.payload) == "on"):
                 LED_color = "on"
         elif (str(msg.payload) == "off"):
                 LED_color = "off"
