@@ -70,7 +70,7 @@ void AllClear(){
 void Msg_rcv(char* topic, byte* payload, unsigned int length){     //Unsigned int = Positive numbers (more range)
   Serial.println((char)payload[1]);
   if ((char) payload[0] == 'o'){
-    if ((char) payload[1] == 'n' or (char) payload[1] == 'p'){
+    if ((char) payload[1] == 'n'){
       LED_pwr = "On";
     }
     else{

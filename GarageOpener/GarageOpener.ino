@@ -1,17 +1,16 @@
 #include <PubSubClient.h>
 #include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
 #include <WiFiClient.h>
 
 // #### LED Pin Setup #### //
-int NO = D;
-int COM = D7;
-int NC = D;       
+int NO = D8;
+int COM = D0;
+int NC = D1;       
 
 // #### MQTT Server connection Setup - Raspberry Pi Broker #### //
 char* mqtt_server = "192.168.43.40";  
 int mqtt_port = 1883;
-char* topic = "Distance Sensor and Reed Switch";  
+char* topic = "Sensors";  
 
 WiFiClient Wifi;            //Setup Wifi object 
 PubSubClient client(Wifi);  //Object that gives you all the MQTT functionality, access objects in PubSubClient Library
@@ -21,12 +20,22 @@ char WifiName[] = "Verizon-SM-G935V";            //SSID
 char Password[] = "password";
 
 void Msg_rcv(char* topic, byte* payload, unsigned int length){     //Unsigned int = Positive numbers (more range)
-  Serial.println ("Message Received");
+  Serial.println((char)payload[1]);
+  if ((char) payload[0] == 'o'){
+    if ((char) payload[1] == 'p'){
+      COM = 0
+    }
+    else{
+      COM = 1
+    }
+  }
 }
 
 void setup() {
   // put your setup code here, to run once:
-  pinMode (Switch, INPUT_PULLUP);               //INPUT_PULLUP, Pin is high (3.3V) until low      
+  pinMode (COM, OUTPUT);               //INPUT_PULLUP, Pin is high (3.3V) until low
+  pinMode (NO, INPUT);
+  pinMode (NC, INPUT);      
   Serial.begin(9600);       //Begin serial monitor
   
   client.setServer(mqtt_server, mqtt_port);           
@@ -48,20 +57,21 @@ void setup() {
   }
   client.subscribe(topic);
   Serial.println(topic);
+  Serial.println(digitalRead(COM));
+  if (digitalRead(COM) = 1){
+    Serial.println(digitalRead(NC));
+    Serial.println("garage is CLOSED");
+  }
+  else{
+    Serial.println(digitalRead(NO));
+    Serial.println("garage is OPEN");
+  }
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   client.loop();
-  State = digitalRead(NO);
-  if (State == 1){
-    client.publish(topic,"open");
+  if(!client.connected()){
+    client.connect("GarageOpener");
   }
-  else if (State == 0){
-    client.publish(topic,"off");
-  }
-  Serial.print(topic);
-  Serial.print(" ");
-  Serial.println(State);
-  delay (100);
 }

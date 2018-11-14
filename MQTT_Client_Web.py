@@ -7,7 +7,7 @@ import sys
 import threading
 
 #Channel Topic
-sensors = "Distance Sensor and Reed Switch"
+sensors = "Sensors"
 LED = "LED"
 
 #ip of localhost

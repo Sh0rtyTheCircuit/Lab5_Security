@@ -14,7 +14,7 @@ int distance;      //1 bit integer
 // #### MQTT Server connection Setup - Raspberry Pi Broker #### //
 char* mqtt_server = "192.168.43.40";  
 int mqtt_port = 1883;  
-char* topic = "Distance Sensor and Reed Switch";
+char* topic = "Sensors";
 
 WiFiClient Wifi;            //Setup Wifi object 
 PubSubClient client(Wifi);  //Object that gives you all the MQTT functionality, access objects in PubSubClient Library
