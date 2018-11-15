@@ -1,4 +1,3 @@
-#import os
 import paho.mqtt.client as mqtt
 import time
 import socket
@@ -23,10 +22,10 @@ mqtt_port = 1883
 def msg_rcv(sensors, user_data, msg):   #Interpret Msgs (Loops)
         print "Payload is " + str(msg.payload)
         if (str(msg.payload) == "close"):
-				LED_color == "close"
-		elif (str(msg.payload) == "open"):
-				LED_color == "open"
-		elif (str(msg.payload) == "on"):
+                LED_color == "close"
+        elif (str(msg.payload) == "open"):
+                LED_color == "open"
+        elif (str(msg.payload) == "on"):
                 LED_color = "on"
         elif (str(msg.payload) == "off"):
                 LED_color = "off"
@@ -60,57 +59,55 @@ print "connection to broker started"
 
 ## CREATE WEBSERVER ##
 
-HOST, PORT = '', 9898 
+HOST, PORT = '', 9898
 
-listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)	#socket setup
+listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)    #socket setup
 listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-listener.bind((HOST,PORT))					#Where the server is now located
-listener.listen(1)						#Listen for this many clients
+listener.bind((HOST,PORT))                                      #Where the server is now located
+listener.listen(1)                                              #Listen for this many clients
 
 print 'Listener is set up'
-stopper = threading.Event()					#Handler for starting and stopping the thread
+stopper = threading.Event()                                     #Handler for starting and stopping the thread
 
 while True:
-	client_connection, client_address = listener.accept()	#Accept connection from user 
-
-	request = client_connection.recv(1024)			#Waiting for GET REQUEST(refresh/load website). Request is new request now.
-	print request						#Request = whatever is Posted when btns are pressed
-	check_status = request[0:13]					#Look at URL in the GET REQUEST
-	print check_status
-	if check_status.find("close")>0:			#Look for "Green" in request. If not found, will return -1 which breaks the code
-		stopper.set()
-		client.publish(sensors,"close")
-	if check_status.find("open")>0:
-		stopper.set()
-		client.publish(sensors,"open")
+        client_connection, client_address = listener.accept()   #Accept connection from user
 		
-	disp_body = """\
+		request = client_connection.recv(1024)                  #Waiting for GET REQUEST(refresh/load website). Request is new request now.
+        print request                                           #Request = whatever is Posted when btns are pressed
+        check_status = request[0:13]                                    #Look at URL in the GET REQUEST
+        print check_status
+        if check_status.find("close")>0:                        #Look for "Green" in request. If not found, will return -1 which breaks the code
+                stopper.set()
+                client.publish(sensors,"close")
+        if check_status.find("open")>0:
+                stopper.set()
+                client.publish(sensors,"open")
+
+        disp_body = """\
 <html>
-	<title> Choose Wisely </title>
-	<body>
+        <title> Choose Wisely </title>
+        <body>
 
-		<form action="http://localhost:9898/off" method= "post">
-			<button>Close</button>
-		</form>
-	<br>
-		<form action="http://localhost:9898/on" method= "post">
-			<button> Open </button>
-		</form>
-	<br>
-	</body>
-
-</html>	
-	"""
+                <form action="/off" method= "post">
+                        <button>Close</button>
+                </form>
+        <br>
+                <form action="/on" method= "post">
+                        <button> Open </button>
+                </form>
+        <br>
+        </body>
+</html>
+        """
         display = """\
 HTTP/1.1 302 OK
 Content-Type: text/html
-Content-Length: %d
-Connection: close  
-""" % len(disp_body)
-
-	client_connection.sendall(display + disp_body)
-	client_connection.close()
-
+Connection: close \n
+"""
+        print (display + disp_body)
+        client_connection.sendall(display + disp_body)
+        client_connection.close()
+        print ("sent")
 #Predefined functions
 client.loop_forever()   #Client will keep itself alive
 client.disconnect()     #Disconnect before dying (cntrl C or kill)

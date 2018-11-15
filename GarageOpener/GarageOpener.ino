@@ -23,10 +23,10 @@ void Msg_rcv(char* topic, byte* payload, unsigned int length){     //Unsigned in
   Serial.println((char)payload[1]);
   if ((char) payload[0] == 'o'){
     if ((char) payload[1] == 'p'){
-      COM = 0
+      COM = 0;
     }
     else{
-      COM = 1
+      COM = 1;
     }
   }
 }
@@ -58,7 +58,7 @@ void setup() {
   client.subscribe(topic);
   Serial.println(topic);
   Serial.println(digitalRead(COM));
-  if (digitalRead(COM) = 1){
+  if (digitalRead(COM) == 1){
     Serial.println(digitalRead(NC));
     Serial.println("garage is CLOSED");
   }
