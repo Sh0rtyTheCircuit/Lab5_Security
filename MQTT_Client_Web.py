@@ -8,14 +8,13 @@ import threading
 #Channel Topic
 sensors = "Sensors"
 LED = "LED"
+GarageOpener = "GarageOpener"
 
 #ip of localhost
 mqtt_broker= "192.168.43.40"
 mqtt_port = 1883
 
-#Set up MQTT Client object (access to MQTT functions in the library)
-#client = mqtt.Client()
-#print "MQTT client object is set up"
+Accept_IP = "192.168.43."
 
 #Define functions
 
@@ -42,8 +41,8 @@ def msg_rcv(sensors, user_data, msg):   #Interpret Msgs (Loops)
 def run_broker(client, user_data, flags, rc):                   #Subscribe to topics (Once)
         print "In the broker function"
         client.subscribe(sensors)                       #Listen to the Sensors channel
-        print "Subscribed to "
-        print (sensors)
+        print "Subscribed to " + topic
+        client.subscribe(GarageOpener)
 
 client = mqtt.Client()
 
@@ -61,6 +60,10 @@ print "connection to broker started"
 
 HOST, PORT = '', 9898
 
+#httpd = BaseHTTPServer.HTTPServer((HOST, PORT), SimpleHTTPServer.SimpleHTTPRequestHandler)
+#httpd.socket = ssl.wrap_socket (httpd.socket, keyfile= './key.pem', certfile='./server.pem', server_side=True)
+#httpd.serve_forever()
+
 listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)    #socket setup
 listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 listener.bind((HOST,PORT))                                      #Where the server is now located
@@ -70,41 +73,54 @@ print 'Listener is set up'
 stopper = threading.Event()                                     #Handler for starting and stopping the thread
 
 while True:
+        client.loop()
         client_connection, client_address = listener.accept()   #Accept connection from user
-		
-		request = client_connection.recv(1024)                  #Waiting for GET REQUEST(refresh/load website). Request is new request now.
+
+        request = client_connection.recv(1024)                  #Waiting for GET REQUEST(refresh/load website). Request is new request now.
         print request                                           #Request = whatever is Posted when btns are pressed
         check_status = request[0:13]                                    #Look at URL in the GET REQUEST
         print check_status
         if check_status.find("close")>0:                        #Look for "Green" in request. If not found, will return -1 which breaks the code
                 stopper.set()
-                client.publish(sensors,"close")
-        if check_status.find("open")>0:
+                print ("closed")
+                client.publish(GarageOpener,payload ="close")
+        elif check_status.find("open")>0:
                 stopper.set()
-                client.publish(sensors,"open")
-
-        disp_body = """\
+                print ("open")
+                client.publish(GarageOpener,payload ="open")
+        if client_address [0][0:11] == Accept_IP:               #If the client IP is in the same network
+                disp_body = """\
 <html>
         <title> Choose Wisely </title>
         <body>
 
-                <form action="/off" method= "post">
+                <form action="/close" method= "post">
                         <button>Close</button>
                 </form>
-        <br>
-                <form action="/on" method= "post">
+				<form action="/open" method= "post">
                         <button> Open </button>
                 </form>
         <br>
         </body>
+
 </html>
         """
+        else:                                                   #If the client IP is in a different network, do not show the page
+                disp_body = """\
+<html>
+        <title> Choose Wisely </title>
+        <body>
+                <h1> Nice Try </h2>
+        <br>
+        </body>
+
+</html> """
         display = """\
 HTTP/1.1 302 OK
 Content-Type: text/html
 Connection: close \n
 """
-        print (display + disp_body)
+        print (display)
         client_connection.sendall(display + disp_body)
         client_connection.close()
         print ("sent")

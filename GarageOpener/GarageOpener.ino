@@ -4,13 +4,14 @@
 
 // #### LED Pin Setup #### //
 int NO = D8;
-int COM = D0;
+int COM = D5;
 int NC = D1;       
 
 // #### MQTT Server connection Setup - Raspberry Pi Broker #### //
 char* mqtt_server = "192.168.43.40";  
 int mqtt_port = 1883;
-char* topic = "Sensors";  
+char* topic = "GarageOpener";  
+char* state = " ";
 
 WiFiClient Wifi;            //Setup Wifi object 
 PubSubClient client(Wifi);  //Object that gives you all the MQTT functionality, access objects in PubSubClient Library
@@ -20,14 +21,17 @@ char WifiName[] = "Verizon-SM-G935V";            //SSID
 char Password[] = "password";
 
 void Msg_rcv(char* topic, byte* payload, unsigned int length){     //Unsigned int = Positive numbers (more range)
-  Serial.println((char)payload[1]);
+  Serial.print ("payload is ");
+  Serial.println((char)payload[0]);
   if ((char) payload[0] == 'o'){
     if ((char) payload[1] == 'p'){
-      COM = 0;
+      digitalWrite(COM,LOW);
+      Serial.println("COM port is LOW");
+     }
     }
-    else{
-      COM = 1;
-    }
+  if ((char) payload[0] == 'c'){
+    digitalWrite(COM,HIGH);
+    Serial.println("COM port is HIGH");
   }
 }
 
@@ -36,6 +40,7 @@ void setup() {
   pinMode (COM, OUTPUT);               //INPUT_PULLUP, Pin is high (3.3V) until low
   pinMode (NO, INPUT);
   pinMode (NC, INPUT);      
+  digitalWrite(COM,LOW);
   Serial.begin(9600);       //Begin serial monitor
   
   client.setServer(mqtt_server, mqtt_port);           
@@ -56,16 +61,6 @@ void setup() {
     Serial.println("Finding a Connection...");
   }
   client.subscribe(topic);
-  Serial.println(topic);
-  Serial.println(digitalRead(COM));
-  if (digitalRead(COM) == 1){
-    Serial.println(digitalRead(NC));
-    Serial.println("garage is CLOSED");
-  }
-  else{
-    Serial.println(digitalRead(NO));
-    Serial.println("garage is OPEN");
-  }
 }
 
 void loop() {
@@ -74,4 +69,16 @@ void loop() {
   if(!client.connected()){
     client.connect("GarageOpener");
   }
+   if (digitalRead(NC) == HIGH){
+    state = "close";
+    Serial.println(state);
+  }
+  else if (digitalRead(NC) == LOW){
+    state = "open";
+    Serial.println(state);
+    
+  }
+  //client.publish(topic, state);
+  Serial.println(state);
+  delay(1000);
 }
